@@ -50,13 +50,65 @@ html {
 
 body {
     margin: 0;
-    background: var(--night);
+    min-height: 100vh;
+    /* light bouncing up off the lit pitch, below the fold of the sky */
+    background:
+        radial-gradient(ellipse 90% 45% at 50% 115%, color-mix(in srgb, var(--turf-mow) 70%, transparent), transparent 70%) fixed,
+        var(--night);
+    isolation: isolate;
     color: var(--chalk);
     font-family: var(--f-mono);
     font-size: 0.8125rem;
     line-height: 1.55;
     font-variant-numeric: tabular-nums;
     -webkit-font-smoothing: antialiased;
+}
+
+/* The floodlights. Two pylons just off the top corners, each throwing its
+   own temperature through the haze — home's cyan from the left, away's
+   sodium from the right, matching the sides they take in the scoreline.
+   Fixed, so the stadium holds still while the match scrolls under it. */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background:
+        /* the lamp heads' glow */
+        radial-gradient(ellipse 38% 42% at 6% 0%, color-mix(in srgb, var(--lamp) 13%, transparent), transparent 70%),
+        radial-gradient(ellipse 38% 42% at 94% 0%, color-mix(in srgb, var(--sodium) 10%, transparent), transparent 70%),
+        /* beams — three per pylon, fanning down across the stands */
+        conic-gradient(from 0deg at 6% -6%,
+            transparent 121deg,
+            color-mix(in srgb, var(--lamp) 7%, transparent) 123deg, transparent 125.5deg,
+            transparent 136deg,
+            color-mix(in srgb, var(--lamp) 6%, transparent) 138deg, transparent 140deg,
+            transparent 151deg,
+            color-mix(in srgb, var(--lamp) 5%, transparent) 152.5deg, transparent 154deg),
+        conic-gradient(from 0deg at 94% -6%,
+            transparent 206deg,
+            color-mix(in srgb, var(--sodium) 5%, transparent) 207.5deg, transparent 209deg,
+            transparent 220deg,
+            color-mix(in srgb, var(--sodium) 6%, transparent) 222deg, transparent 224deg,
+            transparent 234.5deg,
+            color-mix(in srgb, var(--sodium) 7%, transparent) 237deg, transparent 239deg);
+    /* beams have a hard edge as drawn; a little haze softens them */
+    filter: blur(5px);
+    /* and they spend themselves before reaching the pitch */
+    -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 15%, transparent 75%);
+    mask-image: linear-gradient(to bottom, #000 0%, #000 15%, transparent 75%);
+}
+
+/* film grain: breaks up the banding that low-alpha gradients leave on a dark ground */
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 :focus-visible {
@@ -665,6 +717,14 @@ body {
 /* the shot type wraps to three lines on a phone and triples every row's height —
    the map already carries this, so drop the column rather than squeeze it */
 @media (max-width: 640px) {
+    /* on a tall, narrow screen the two fans of beams can only cross in an X
+       over the scoreline — keep the lamps' glow and lose the beams */
+    body::before {
+        background:
+            radial-gradient(ellipse 70% 30% at 0% 0%, color-mix(in srgb, var(--lamp) 13%, transparent), transparent 70%),
+            radial-gradient(ellipse 70% 30% at 100% 0%, color-mix(in srgb, var(--sodium) 10%, transparent), transparent 70%);
+    }
+
     .col-shot {
         display: none;
     }
